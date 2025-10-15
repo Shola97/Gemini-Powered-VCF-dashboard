@@ -1,0 +1,6 @@
+pandas
+os
+json
+streamlit
+plotly
+numpy
