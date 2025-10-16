@@ -282,4 +282,4 @@ with gr.Blocks(title="VCF Helper (Informational only)") as demo:
         outputs=[plot_dp, plot_mq, plot_af, plot_indel, plot_rpb, plot_mqb, plot_bqb, plot_mqsb]
     )
 
-demo.launch()    
+demo.launch(share=True)    
