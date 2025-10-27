@@ -1,3 +1,4 @@
+
 import os, json, pandas as pd, numpy as np, gradio as gr
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -88,21 +89,6 @@ def explain_variant(row_json_or_dict):
     except Exception as e:
         return f"LLM error: {e}"
 
-def filter_table(df: pd.DataFrame, min_mq, min_dp, indel_only):
-    if not isinstance(df, pd.DataFrame) or df.empty:
-        return pd.DataFrame()
-
-    out = df.copy()
-    if min_mq is not None and "MQ" in out.columns:
-        out = out[pd.to_numeric(out["MQ"], errors="coerce").fillna(0) >= float(min_mq)]
-    if min_dp is not None and "DP" in out.columns:
-        out = out[pd.to_numeric(out["DP"], errors="coerce").fillna(0) >= float(min_dp)]
-    if bool(indel_only) and "INDEL" in out.columns:
-        out = out[pd.to_numeric(out["INDEL"], errors="coerce").fillna(0) == 1]
-
-    out = out.where(pd.notnull(out), None)
-    return out.reset_index(drop=True)
-
 def get_row_json(df, index):
     if not isinstance(df, pd.DataFrame) or df.empty:
         return "No data loaded."
@@ -111,7 +97,7 @@ def get_row_json(df, index):
         return json.dumps(row, indent=2)
     except Exception as e:
         return f"Error: {e}"
-    
+
 with gr.Blocks(title="VCF Helper (Informational only)") as demo:
     gr.Markdown("### Variant Helper (CSV from VCF)\n**Informational only — not medical advice.**")
 
@@ -120,14 +106,8 @@ with gr.Blocks(title="VCF Helper (Informational only)") as demo:
 
     with gr.Tabs():
         with gr.Tab("Table & Explain"):
-            with gr.Row():
-                min_mq = gr.Number(label="Min MQ (e.g., 40)", value=None)
-                min_dp = gr.Number(label="Min DP (e.g., 10)", value=None)
-                indel_only = gr.Checkbox(label="INDEL only", value=False)
-
             btn_load = gr.Button("Load / Refresh")
             table = gr.Dataframe(row_count=(8, "dynamic"), wrap=True, interactive=False)
-            btn_apply = gr.Button("Apply filters")
 
             with gr.Row():
                 row_index = gr.Number(label="Row index to explain (0-based)", value=0)
@@ -156,18 +136,14 @@ with gr.Blocks(title="VCF Helper (Informational only)") as demo:
     # Callbacks
     def do_load(file):
         if not file:
-            return pd.DataFrame()
-        return load_csv(file)
+            return pd.DataFrame(), pd.DataFrame()
+        df = load_csv(file)
+        return df, df  # first -> table, second -> df_state
 
-    def do_filter(df, min_mq, min_dp, indel_only):
-        return filter_table(df, min_mq, min_dp, indel_only)
-
-    btn_load.click(fn=do_load, inputs=file, outputs=table).then(
-        lambda t: t, inputs=table, outputs=df_state
-    )
-    btn_apply.click(fn=do_filter, inputs=[df_state, min_mq, min_dp, indel_only], outputs=table)
+    btn_load.click(fn=do_load, inputs=file, outputs=[table, df_state])
     btn_preview_json.click(fn=get_row_json, inputs=[df_state, row_index], outputs=row_json)
     btn_explain.click(fn=explain_variant, inputs=row_json, outputs=explanation)
+
     def build_visuals(df):
         # Provide default empty plots if df is empty or not a DataFrame
         if not isinstance(df, pd.DataFrame) or df.empty:
@@ -282,6 +258,4 @@ with gr.Blocks(title="VCF Helper (Informational only)") as demo:
         outputs=[plot_dp, plot_mq, plot_af, plot_indel, plot_rpb, plot_mqb, plot_bqb, plot_mqsb]
     )
 
-demo.launch(share=True)
-
-#script has to be running for the share link to work
+demo.launch(share=True)  # script has to be running for the share link to work
