@@ -2,7 +2,7 @@
 import os, json, pandas as pd, numpy as np, gradio as gr
 
 EXPECTED = [
-    "VDB","RPB","MQB","BQB","MQSB","SGB","MQ0F", "INDEL",
+    "sample_id", "VDB","RPB","MQB","BQB","MQSB","SGB","MQ0F", "INDEL",
     "AC","AN","DP4","MQ","gt_PL","gt_GT","gt_GT_alleles",
     # CHROM/POS are optional; include if present in your CSV
     "CHROM","POS","REF","ALT","QUAL"

@@ -7,7 +7,7 @@ load_dotenv()
 LLM = ChatGoogleGenerativeAI(model="gemini-2.5-pro", temperature=0.2)
 
 EXPECTED = [
-    "VDB","RPB","MQB","BQB","MQSB","SGB","MQ0F", "INDEL",
+    "sample_id", "VDB","RPB","MQB","BQB","MQSB","SGB","MQ0F", "INDEL",
     "AC","AN","DP4","MQ","gt_PL","gt_GT","gt_GT_alleles",
     # CHROM/POS are optional; include if present in your CSV
     "CHROM","POS","REF","ALT","QUAL"
@@ -78,7 +78,7 @@ def load_csv(file):
 
     # Reorder columns to a consistent view
     preferred = [
-        "CHROM","POS","REF","ALT","DP","INDEL","ALT_FRAC","MQ",
+        "sample_id","CHROM","POS","REF","ALT","DP","INDEL","ALT_FRAC","MQ",
         "AC","AN","DP4","gt_GT","gt_GT_alleles","QUAL",
         "VDB","RPB","MQB","BQB","MQSB","SGB","MQ0F","gt_PL"
     ]
